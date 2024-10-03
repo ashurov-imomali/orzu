@@ -1,0 +1,31 @@
+srv:
+  host: "localhost:"
+  port: "8080"
+  read_timeout: 30
+  write_timeout: 30
+  token: "7=fXsF4AfM8bcJe?ZoucwESD5RYO=-qMlLLTO0CZrFHlNn8QmsMFc1myP6hjIi8QSgbKA68NPzettEDJNRDB1dFolLM2?Px/4ax1c6vVuOL7E9"
+
+orzu:
+  url: "http://192.168.150.170:8090"
+  service_id: "398"
+  token: "CFHG4785470"
+  t_token: "CFHG4785470"
+  secret_key: "H#fd@4!w04-!+23MD?I=T+RW"
+
+redis:
+  url: "192.168.150.58:6379"
+  username: ""
+  password: ""
+  db: 0
+
+otp_params:
+  url: "http://192.168.150.64:8339/otp"
+  life_time: 6000
+  confirm_limit: 300
+
+postgres:
+  username: "asouser"
+  password: "pUpwd5fDs4b"
+  host: "192.168.150.58"
+  port: 5433
+  db_name: "hpdb"

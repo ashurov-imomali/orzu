@@ -1,0 +1,371 @@
+basePath: /
+definitions:
+  models.Condition:
+    properties:
+      cl_comission:
+        type: number
+      condition_id:
+        type: integer
+      interval_units:
+        type: string
+      max_summa:
+        type: number
+      min_summa:
+        type: number
+      name:
+        type: string
+      prc_rate:
+        type: number
+      term:
+        type: integer
+    type: object
+  models.CreateTranshReq:
+    properties:
+      hash:
+        type: string
+      pCredConditions:
+        type: integer
+      pInn:
+        type: string
+      pOrzuId:
+        type: integer
+      pPhoneUUID:
+        type: string
+      pRecipient:
+        type: string
+      pServiceId:
+        type: string
+      pSum:
+        type: integer
+      pToken:
+        type: string
+      pan:
+        type: string
+      terminal_id:
+        type: integer
+    type: object
+  models.OTP:
+    properties:
+      account:
+        type: string
+      created_at:
+        type: string
+      expired_at:
+        type: string
+      id:
+        type: string
+      lifetime:
+        type: integer
+      state:
+        type: integer
+      validate_limit:
+        type: integer
+      value:
+        type: string
+    type: object
+  models.Payload:
+    properties:
+      client_name:
+        type: string
+      orzu_id:
+        type: integer
+      passport_id:
+        type: string
+      passport_issue_date:
+        type: string
+      phone_number:
+        type: string
+      set_date:
+        type: string
+    type: object
+  models.PreCheckResponse:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+      payload:
+        $ref: '#/definitions/models.Payload'
+    type: object
+  models.Resp:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+      payload: {}
+    type: object
+  models.Service:
+    properties:
+      code:
+        type: string
+      externalID:
+        type: string
+      name:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Описание API
+  title: Название API
+  version: "1.0"
+paths:
+  /conditions:
+    get:
+      description: Возвращает условия по указанным service_id и orzu_id
+      parameters:
+      - description: orzu_id
+        example: "9995"
+        in: query
+        name: orzu_id
+        required: true
+        type: string
+      - description: service_id
+        example: "118"
+        in: query
+        name: service_id
+        required: true
+        type: string
+      - description: Токен авторизации
+        example: '"Bearer your_token"'
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Условия по сервису
+          schema:
+            items:
+              $ref: '#/definitions/models.Condition'
+            type: array
+        "500":
+          description: Ошибка на сервере
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Получение условий по сервису
+      tags:
+      - conditions
+  /otp/confirm:
+    post:
+      consumes:
+      - application/json
+      description: Подтверждает введенный пользователем OTP
+      parameters:
+      - description: Данные OTP
+        in: body
+        name: otp
+        required: true
+        schema:
+          $ref: '#/definitions/models.OTP'
+      - description: Токен авторизации
+        example: '"Bearer your_token"'
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OTP успешно подтвержден
+          schema:
+            $ref: '#/definitions/models.OTP'
+        "400":
+          description: Некорректные данные
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Ошибка на сервере
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Подтверждение одноразового пароля (OTP)
+      tags:
+      - otp
+  /otp/send:
+    post:
+      consumes:
+      - application/json
+      description: Отправляет OTP на номер телефона пользователя
+      parameters:
+      - description: Данные OTP
+        in: body
+        name: otp
+        required: true
+        schema:
+          $ref: '#/definitions/models.OTP'
+      - description: Токен авторизации
+        example: '"Bearer your_token"'
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OTP успешно отправлен
+          schema:
+            $ref: '#/definitions/models.OTP'
+        "400":
+          description: Некорректные данные
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Ошибка на сервере
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Отправка одноразового пароля (OTP)
+      tags:
+      - otp
+  /ping:
+    get:
+      description: Возвращает статус доступности сервиса
+      responses:
+        "200":
+          description: Сервис доступен
+          schema:
+            $ref: '#/definitions/models.Resp'
+        "503":
+          description: Сервис недоступен
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Проверка доступности сервиса
+      tags:
+      - health
+  /services:
+    get:
+      description: Возвращает список доступных сервисов
+      parameters:
+      - description: Токен авторизации
+        example: '"Bearer your_token"'
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Список сервисов
+          schema:
+            items:
+              $ref: '#/definitions/models.Service'
+            type: array
+        "500":
+          description: Ошибка на сервере
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Получение списка сервисов
+      tags:
+      - services
+  /transactions/create:
+    post:
+      consumes:
+      - application/json
+      description: Создает транш на основе данных, переданных в запросе
+      parameters:
+      - description: Данные для создания транша
+        in: body
+        name: transaction
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateTranshReq'
+      - description: Токен авторизации
+        example: '"Bearer your_token"'
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Транш успешно создан
+          schema:
+            $ref: '#/definitions/models.Resp'
+        "400":
+          description: Некорректные данные
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Ошибка на сервере
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Создание транша
+      tags:
+      - transactions
+  /user/{inn}:
+    get:
+      description: Возвращает данные пользователя по его ИНН
+      parameters:
+      - description: inn
+        example: "015306859"
+        in: path
+        name: inn
+        required: true
+        type: string
+      - description: Токен авторизации
+        example: '"Bearer your_token"'
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Пользователь найден
+          schema:
+            $ref: '#/definitions/models.PreCheckResponse'
+        "500":
+          description: Ошибка на сервере
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Получение пользователя по ИНН
+      tags:
+      - users
+  /user/check-pan:
+    get:
+      description: Проверяет PAN пользователя по его Orzu ID и PAN
+      parameters:
+      - description: orzu_id
+        example: "9995"
+        in: query
+        name: orzu_id
+        required: true
+        type: string
+      - description: Токен авторизации
+        example: '"Bearer your_token"'
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: pan
+        example: "4890844032435600"
+        in: query
+        name: pan
+        required: true
+        type: string
+      responses:
+        "200":
+          description: ok
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Ошибка на сервере
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Проверка PAN пользователя
+      tags:
+      - users
+swagger: "2.0"
